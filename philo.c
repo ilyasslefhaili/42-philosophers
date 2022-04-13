@@ -21,48 +21,52 @@ void fill_times(char **av, times_t *c)
 		c->n_to_philo_eat = ft_atoi(av[5]);
 }
 
-int check_arg(char **av)
-{
-	int	i;
-	int	j;
-
-	i = 1;
-	while (av[i])
-	{
-		j = 0;
-		while (av[i][j] != '\0')
-		{
-			if(av[i][j] > '9')
-				return (1);
-			else if(av[i][j] < '0')
-				return (1);
-			j++;
-		}
-		i++;
-	}
-	return (0);
-}
-
-void  *print(void *par)
+void  *philo_actv(void *par)
 {
     int i = 0;
+	philos_data_t *st;
 
-    while(i <1000)
-    {
+	st = par;
+	pthread_mutex_lock(&st->mt);
+    while(i < 1000)
         i++;
-        *(int*)par = *(int*)par + 1;
-    }
-    printf("%d\n", *(int*)par);
+	pthread_mutex_unlock(&st->mt);
+	//printf("%d\n", i);
     return(NULL);
 }
 
 int main(int ac, char **av)
 {
-	times_t c;
+	philos_data_t	philo_d;
+	pthread_t		*philo;
+	int				i;
 
+	ac = 0;
+	i = 0;
 	if (check_arg(av) == 1)
 		return (1);
-	fill_times(av, &c);
-	printf("%d\n", c.n_philo);
-	printf("%d\n", c.time_to_die);
+	fill_times(av, &philo_d.t);
+	philo = malloc(sizeof(pthread_t) * philo_d.t.n_philo);
+	if(!philo)
+		return (1);
+	philo_d.f = ft_calloc(4, philo_d.t.n_philo);
+	if (!philo_d.f)
+		retutn (1);
+	while (i < philo_d.t.n_philo)
+	{
+		printf("%d\n", philo_d.f[i]);
+		i++;
+	} 
+	pthread_mutex_init(&philo_d.mt, NULL);
+	while (i < philo_d.t.n_philo)
+	{
+		pthread_create(&philo[i], NULL, philo_actv, &philo_d);
+		i++;
+	}
+	i = 0;
+	while (i < philo_d.t.n_philo)
+	{
+		pthread_join(philo[i], NULL);
+		i++;
+	}
 }
