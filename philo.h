@@ -29,10 +29,8 @@ typedef struct philo
 
 typedef struct  data_t
 {
-	times_t t;
+	times_t *t;
 	pthread_mutex_t *mt;
-	// pthreaad_mutex_t *next_fork;
-	int *f;
 	int	id;
 }philos_data_t;
 

@@ -15,7 +15,7 @@ OBJS = $(subst .c,.o, $(SRCS))
 all : $(NAME)
 
 $(NAME) : $(PHILO_A)
-		$(CC) $(CFLAGS) $(PHILO_A) -o $(NAME)
+		$(CC) $(CFLAGS) -fsanitize=address $(PHILO_A) -o $(NAME)
 
 $(PHILO_A) : $(OBJS)
 		$(CC) $(CFLAGS) -c $(SRCS)
