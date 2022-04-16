@@ -11,6 +11,16 @@
 /* ************************************************************************** */
 #include "philo.h"
 
+long long get_time(void)
+{
+	long long time;
+	struct timeval t;
+
+	gettimeofday(&t, NULL);
+	time = t.tv_sec * 1000 + t.tv_usec / 1000;
+	return (time); 
+}
+
 void fill_times(char **av, times_t *c)
 {
 	c->n_philo = ft_atoi(av[1]);
@@ -29,19 +39,18 @@ void  *philo_actv(void *par)
 	while (1)
 	{
 		pthread_mutex_lock(&st->mt[st->id]);
-		printf("philo %d has taken a fork %d \n", st->id + 1, st->id);
+		printf("%lld philo %d has taken a fork %d \n",get_time(), st->id + 1, st->id);
 		pthread_mutex_lock(&st->mt[(st->id + 1) % st->t->n_philo]);
-		printf("philo %d has taken a fork %d \n", st->id + 1,( st->id + 1) % st->t->n_philo);
-		printf("\x1b[32m""philo %d is eating\n""\x1b[0m", st->id + 1);
+		printf("%lld philo %d has taken a fork %d \n",get_time(), st->id + 1,( st->id + 1) % st->t->n_philo);
+		printf("\x1b[32m""%lld philo %d is eating\n""\x1b[0m",get_time(), st->id + 1);
 		usleep(st->t->time_to_eat * 1000);
 		pthread_mutex_unlock(&st->mt[st->id]);
 		pthread_mutex_unlock(&st->mt[(st->id + 1)% st->t->n_philo]);
-		printf("philo %d is sleeping\n", st->id + 1);
+		printf("%lld philo %d is sleeping\n",get_time(), st->id + 1);
 		usleep(st->t->time_to_sleep * 1000);
-		printf("philod %d is thinking\n", st->id + 1);
+		printf("%lld philod %d is thinking\n", get_time(), st->id + 1);
 	}
 	return(NULL);
-	
 }
 
 int main(int ac, char **av)
