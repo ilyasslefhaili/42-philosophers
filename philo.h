@@ -33,11 +33,13 @@ typedef struct  data_t
 	times_t *t;
 	pthread_mutex_t *mt;
 	int	id;
+	long long lt;
 }philos_data_t;
 
-int		ft_atoi(const char *str);
-int		check_arg(char **av);
-void	*ft_calloc(int count, int size);
+long long 	get_time(void);
+int			ft_atoi(const char *str);
+int			check_arg(char **av);
+void		*ft_calloc(int count, int size);
 
 #endif
 
