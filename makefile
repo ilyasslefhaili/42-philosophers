@@ -4,7 +4,7 @@ PHILO_A = philo.a
 
 CC = gcc
 
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror 
 
 SRCS = philo.c\
 		atoi.c\
@@ -15,7 +15,7 @@ OBJS = $(subst .c,.o, $(SRCS))
 all : $(NAME)
 
 $(NAME) : $(PHILO_A)
-		$(CC) $(CFLAGS) -fsanitize=address $(PHILO_A) -o $(NAME)
+		$(CC) $(CFLAGS) $(PHILO_A) -o $(NAME)
 
 $(PHILO_A) : $(OBJS)
 		$(CC) $(CFLAGS) -c $(SRCS)

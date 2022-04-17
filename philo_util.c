@@ -42,16 +42,3 @@ int check_arg(char **av)
 	}
 	return (0);
 }
-
-void	*ft_calloc(int count, int size)
-{
-	void				*k;
-	int					i;
-
-	i = 0;
-	k = malloc(count * size);
-	if (!k)
-		return (NULL);
-	memset(k, 0, size * count);
-	return (k);
-}

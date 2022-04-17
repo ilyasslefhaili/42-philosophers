@@ -25,7 +25,6 @@ typedef struct philo
 	int time_to_eat;
 	int time_to_sleep;
 	int n_to_philo_eat;
-	int n_philo;
 }times_t;
 
 typedef struct  data_t
@@ -34,12 +33,14 @@ typedef struct  data_t
 	pthread_mutex_t *mt;
 	int	id;
 	long long lt;
+	long long kt;
+	int 	n_philo;
+	int 		l;
 }philos_data_t;
 
 long long 	get_time(void);
 int			ft_atoi(const char *str);
 int			check_arg(char **av);
-void		*ft_calloc(int count, int size);
 
 #endif
 
