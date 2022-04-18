@@ -15,15 +15,19 @@ int fill_times(int ac, char **av, times_t *c)
 {
 	c->print_lock = malloc(sizeof(pthread_mutex_t));
 	if (!c->print_lock)
-		return (0);
+		return (-1);
 	pthread_mutex_init(c->print_lock, NULL);
 	c->time_to_die = ft_atoi(av[2]);
 	c->time_to_eat = ft_atoi(av[3]);
 	c->time_to_sleep = ft_atoi(av[4]);
 	if (ac == 5)
-		c->n_to_philo_eat = -1;
+		c->n_to_philo_eat = 0;
 	else
 		c->n_to_philo_eat = ft_atoi(av[5]);
+	if(c->n_to_philo_eat == 0)
+		return (0);
+	else if(c->n_to_philo_eat < 0)
+		return (-1);
 	return(ft_atoi(av[1]));
 }
 
@@ -84,6 +88,8 @@ int main(int ac, char **av)
 		return (1);	
 	tim = malloc(sizeof(times_t));
 	nph = fill_times(ac, av, tim);
+	if (nph <= 0)
+		return (nph);
 	philo_d = malloc(sizeof(philos_data_t) * nph);
 	mutex = malloc(sizeof(pthread_mutex_t) * nph);
 	philo = malloc(sizeof(pthread_t) * nph);
