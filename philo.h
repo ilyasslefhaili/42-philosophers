@@ -25,6 +25,7 @@ typedef struct philo
 	int time_to_eat;
 	int time_to_sleep;
 	int n_to_philo_eat;
+	pthread_mutex_t *print_lock;
 }times_t;
 
 typedef struct  data_t
@@ -35,7 +36,8 @@ typedef struct  data_t
 	long long lt;
 	long long kt;
 	int 	n_philo;
-	int 		l;
+	int			n_ofm;
+	pthread_mutex_t *mutex_lock;
 }philos_data_t;
 
 long long 	get_time(void);

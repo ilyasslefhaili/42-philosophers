@@ -13,6 +13,10 @@
 
 int fill_times(char **av, times_t *c)
 {
+	c->print_lock = malloc(sizeof(pthread_mutex_t));
+	if (!c->print_lock)
+		return (0);
+	pthread_mutex_init(c->print_lock, NULL);
 	c->time_to_die = ft_atoi(av[2]);
 	c->time_to_eat = ft_atoi(av[3]);
 	c->time_to_sleep = ft_atoi(av[4]);
@@ -21,28 +25,49 @@ int fill_times(char **av, times_t *c)
 	return(ft_atoi(av[1]));
 }
 
+void ft_usleep(int time)
+{
+	long long  l;
+
+	l = get_time() + time;
+	while (l > get_time())
+	{
+		usleep(100);
+	}
+}
+
+void ft_print(char *s, philos_data_t *data)
+{
+	pthread_mutex_lock(data->t->print_lock);
+	printf("%d %s\n", data->id, s);
+	pthread_mutex_unlock(data->t->print_lock);
+}
 void  *philo_actv(void *par)
 {
 	philos_data_t *st;
 
 	st = par;
 	while (1)
-	{
+	{	
 		pthread_mutex_lock(&st->mt[st->id]);
+		ft_print("has taken a fork", st);
 		st->kt = get_time();
+		////
 		if(st->lt != 0 && st->t->time_to_die < st->kt - st->lt)
 			return (NULL);
-		printf("%lld philo %d take a fork\n", get_time(), st->id + 1);
+		////
 		pthread_mutex_lock(&st->mt[(st->id + 1) % st->n_philo]);
-		printf("%lld philo %d take a fork\n", get_time(), st->id + 1);
-		printf("\x1b[32m""%lld philo %d is eating\n""\x1b[0m",get_time(), st->id + 1);
+		ft_print("has taken a fork", st);
 		st->lt = get_time();
-		usleep(st->t->time_to_eat * 1000);
+		ft_print("is eating", st);
+		ft_usleep(st->t->time_to_eat);
 		pthread_mutex_unlock(&st->mt[st->id]);
+		ft_print("put down fork", st);
 		pthread_mutex_unlock(&st->mt[(st->id + 1)% st->n_philo]);
-		printf("%lld philo %d is sleeping\n",get_time(), st->id + 1);
-		usleep(st->t->time_to_sleep * 1000);
-		printf("%lld philo %d is thinking\n", get_time(), st->id + 1);
+		ft_print("put down fork", st);
+		ft_print("is sleeping", st);
+		ft_usleep(st->t->time_to_sleep);
+		ft_print("is thinking", st);
 	}
 	return(NULL);
 }
@@ -55,22 +80,17 @@ int main(int ac, char **av)
 	times_t			tim;
 	int				i;
 	pthread_mutex_t	*mutex;
-	int k;
 
-	k = 0;
 	ac = 0;
 	if (check_arg(av) == 1)
 		return (1);
 	nph = fill_times(av, &tim);
 	philo_d = malloc(sizeof(philos_data_t) * nph);
-	if(!philo_d)
-		return (1);
 	mutex = malloc(sizeof(pthread_mutex_t) * nph);
-	if (!mutex)
-		return (1);
 	philo = malloc(sizeof(pthread_t) * nph);
-	if (!philo)
+	if (!(philo_d || mutex || philo))
 		return (1);
+
 	i = 0;
 	while (i < nph)
 	{
@@ -82,11 +102,12 @@ int main(int ac, char **av)
 	while (i < nph)
 	{
 		philo_d[i].lt = 0;
+		philo_d[i].n_ofm = 0;
 		philo_d[i].t = &tim;
 		philo_d[i].n_philo = nph;
 		philo_d[i].id = i;
 		philo_d[i].mt = mutex;
-		//philo_d[i].l = &k;
+		philo_d[i].kt = get_time();
 		if(pthread_create(&philo[i], NULL, philo_actv, &philo_d[i]) != 0)
 			return (1);
 		usleep(100);
@@ -99,12 +120,28 @@ int main(int ac, char **av)
 		{
 			if(philo_d[i].lt != 0 && philo_d[i].t->time_to_die < philo_d[i].kt - philo_d[i].lt)
 			{
-				//pthread_mutex_lock(&m);
-				usleep((tim.time_to_eat + tim.time_to_die) * 1000);
+				pthread_mutex_lock(tim.print_lock);
 				printf("\x1b[0;31m""%lld philo %d is die\n""\x1b[0m", get_time(), philo_d[i].id + 1);
 				return (0);
 			}	
 			i++;
 		}
+		// if (av[5])
+		// {
+		// 	i = 0;
+		// 	k = 0;
+		// 	while (i < nph)
+		// 	{
+		// 		if (philo_d[i].n_ofm >= tim.n_to_philo_eat)
+		// 			k++;
+		// 		i++;
+		// 	}
+		// 	if (k == nph)
+		// 	{
+		// 		pthread_mutex_lock(tim.print_lock);
+		// 		printf("kalo kamlen\n");
+		// 		return (0);
+		// 	}
+		// }
 	}
 }
