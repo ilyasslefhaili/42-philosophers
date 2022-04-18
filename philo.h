@@ -18,6 +18,7 @@
 # include <stdlib.h>
 # include <string.h>
 # include <sys/time.h>
+#include <signal.h>
 
 typedef struct philo
 {
@@ -42,7 +43,7 @@ typedef struct  data_t
 
 long long 	get_time(void);
 int			ft_atoi(const char *str);
-int			check_arg(char **av);
+int			check_arg( char **av);
 
 #endif
 
