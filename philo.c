@@ -39,7 +39,7 @@ void ft_usleep(int time)
 void ft_print(char *s, philos_data_t *data)
 {
 	pthread_mutex_lock(data->t->print_lock);
-	printf("%d %s\n", data->id, s);
+	printf("%lld philo %d %s\n",get_time() ,data->id + 1, s);
 	pthread_mutex_unlock(data->t->print_lock);
 }
 
@@ -59,6 +59,7 @@ void  *philo_actv(void *par)
 		ft_print("has taken a fork", st);
 		st->lt = get_time();
 		ft_print("is eating", st);
+		st->n_ofm += 1;
 		ft_usleep(st->t->time_to_eat);
 		pthread_mutex_unlock(&st->mt[st->id]);
 		pthread_mutex_unlock(&st->mt[(st->id + 1)% st->n_philo]);
@@ -77,12 +78,12 @@ int main(int ac, char **av)
 	times_t			*tim;
 	int				i;
 	pthread_mutex_t	*mutex;
+	int k = 0;
 
 	if (check_arg(av) == 1)
 		return (1);	
 	tim = malloc(sizeof(times_t));
 	nph = fill_times(ac, av, tim);
-	printf("%d\n", nph);
 	philo_d = malloc(sizeof(philos_data_t) * nph);
 	mutex = malloc(sizeof(pthread_mutex_t) * nph);
 	philo = malloc(sizeof(pthread_t) * nph);
@@ -123,22 +124,22 @@ int main(int ac, char **av)
 			}	
 			i++;
 		}
-		// if (av[5])
-		// {
-		// 	i = 0;
-		// 	k = 0;
-		// 	while (i < nph)
-		// 	{
-		// 		if (philo_d[i].n_ofm >= tim.n_to_philo_eat)
-		// 			k++;
-		// 		i++;
-		// 	}
-		// 	if (k == nph)
-		// 	{
-		// 		pthread_mutex_lock(tim.print_lock);
-		// 		printf("kalo kamlen\n");
-		// 		return (0);
-		// 	}
-		// }
+		if (av[5])
+		{
+			i = 0;
+			k = 0;
+			while (i < nph)
+			{
+				if (philo_d[i].n_ofm >= tim->n_to_philo_eat)
+					k++;
+				i++;
+			}
+			if (k == nph)
+			{
+				pthread_mutex_lock(tim->print_lock);
+				printf("kalo kamlen\n");
+				return (0);
+			}
+		}
 	}
 }
