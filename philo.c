@@ -74,34 +74,16 @@ void  *philo_actv(void *par)
 	return(NULL);
 }
 
-int main(int ac, char **av)
+void	*create_thread(pthread_mutex_t *mutex, int nph, times_t *tim)
 {
 	philos_data_t	*philo_d;
-	int   nph;
 	pthread_t		*philo;
-	times_t			*tim;
 	int				i;
-	pthread_mutex_t	*mutex;
-	int k = 0;
 
-	if (check_arg(av) == 1)
-		return (1);	
-	tim = malloc(sizeof(times_t));
-	nph = fill_times(ac, av, tim);
-	if (nph <= 0)
-		return (nph);
 	philo_d = malloc(sizeof(philos_data_t) * nph);
-	mutex = malloc(sizeof(pthread_mutex_t) * nph);
 	philo = malloc(sizeof(pthread_t) * nph);
-	if (!(philo_d || mutex || philo || tim))
-		return (1);
-	i = 0;
-	while (i < nph)
-	{
-		if(pthread_mutex_init(&mutex[i], NULL) != 0)
-			return (1);
-		i++;
-	}
+	if (!(philo_d || philo))
+		return (NULL);
 	i = 0;
 	while (i < nph)
 	{
@@ -113,10 +95,40 @@ int main(int ac, char **av)
 		philo_d[i].mt = mutex;
 		philo_d[i].kt = get_time();
 		if(pthread_create(&philo[i], NULL, philo_actv, &philo_d[i]) != 0)
-			return (1);
+			return (NULL);
 		usleep(100);
 		i++;
 	}
+	return (philo_d);
+}
+
+int check_mils(philos_data_t *philo_d, times_t *tim, int nph)
+{
+	int i;
+	int k;
+
+	i = 0;
+	k = 0;
+	while (i < nph)
+	{
+		if (philo_d[i].n_ofm >= tim->n_to_philo_eat)
+			k++;
+		i++;
+	}
+	if (k == nph)
+	{
+		pthread_mutex_lock(tim->print_lock);
+		printf("all philos are taken his mils\n");
+		return (0);
+	}
+	return (1);
+}
+
+int	waiting_died(philos_data_t *philo_d, times_t *tim, int nph, char **av)
+{
+	int i;
+
+	i = 0;
 	while (1)
 	{
 		i = 0;
@@ -132,20 +144,49 @@ int main(int ac, char **av)
 		}
 		if (av[5])
 		{
-			i = 0;
-			k = 0;
-			while (i < nph)
-			{
-				if (philo_d[i].n_ofm >= tim->n_to_philo_eat)
-					k++;
-				i++;
-			}
-			if (k == nph)
-			{
-				pthread_mutex_lock(tim->print_lock);
-				printf("kalo kamlen\n");
+			if (check_mils(philo_d, tim, nph) == 0)
 				return (0);
-			}
 		}
 	}
+}
+
+int	init_mutex(pthread_mutex_t	*mutex, int nph)
+{
+	int i;
+
+	i = 0;
+	while (i < nph)
+	{
+		if(pthread_mutex_init(&mutex[i], NULL) != 0)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+int main(int ac, char **av)
+{
+	int   nph;
+	times_t			*tim;
+	philos_data_t	*philo_d;
+	pthread_mutex_t	*mutex;
+
+	philo_d = NULL;
+	if (check_arg(av) == 1)
+		return (1);	
+	tim = malloc(sizeof(times_t));
+	if(!tim)
+		return (1);
+	nph = fill_times(ac, av, tim);
+	if (nph <= 0)
+		return (nph);
+	mutex = malloc(sizeof(pthread_mutex_t) * nph);
+	if (!mutex )
+		return (1);
+	if(init_mutex(mutex, nph) == 1)
+		return (0);
+	philo_d = create_thread(mutex, nph, tim);
+	if(philo_d == NULL)
+		return (1);
+	waiting_died(philo_d, tim, nph, av);
 }
