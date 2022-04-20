@@ -38,6 +38,7 @@ typedef struct data_t
 	long long		kt;
 	int				n_philo;
 	int				n_ofm;
+	int				back;
 	pthread_mutex_t	*mutex_lock;
 }t_philos_data;
 

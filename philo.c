@@ -30,7 +30,7 @@ void	*create_thread(pthread_mutex_t *mutex, int nph, t_times *tim)
 		philo_d[i].n_philo = nph;
 		philo_d[i].id = i;
 		philo_d[i].mt = mutex;
-		philo_d[i].kt = get_time();
+		philo_d[i].back = 0;
 		if (pthread_create(&philo[i], NULL, philo_actv, &philo_d[i]) != 0)
 			return (NULL);
 		usleep (100);
@@ -48,9 +48,11 @@ int	check_mils(t_philos_data *philo_d, t_times *tim, int nph)
 	k = 0;
 	while (i < nph)
 	{
+		pthread_mutex_lock(tim->print_lock);
 		if (philo_d[i].n_ofm >= tim->n_to_philo_eat)
 			k++;
 		i++;
+		pthread_mutex_unlock(tim->print_lock);
 	}
 	if (k == nph)
 	{
@@ -70,14 +72,15 @@ int	waiting(t_philos_data *philo_d, t_times *tim, int nph, char **av)
 		i = 0;
 		while (i < nph)
 		{
+			pthread_mutex_lock(tim->print_lock);
 			if (philo_d[i].lt != 0
-				&& philo_d[i].t->time_to_die < philo_d[i].kt - philo_d[i].lt)
-			{
-				pthread_mutex_lock(tim->print_lock);
+				&& philo_d[i].t->time_to_die < get_time() - philo_d[i].lt)
+			{	
 				printf("\x1b[0;31m""%lld philo %d is die\n""\x1b[0m",
 					get_time(), philo_d[i].id + 1);
 				return (0);
 			}
+			pthread_mutex_unlock(tim->print_lock);
 			i++;
 		}
 		if (av[5])

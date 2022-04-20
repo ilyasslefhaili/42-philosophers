@@ -11,6 +11,15 @@
 /* ************************************************************************** */
 #include "philo.h"
 
+void	ft_usleep(long long l)
+{
+	long long	k;
+
+	k = l + get_time();
+	while (k > get_time())
+		usleep(10);
+}
+
 void	*philo_actv(void *par)
 {
 	t_philos_data	*st;
@@ -18,21 +27,22 @@ void	*philo_actv(void *par)
 	st = par;
 	while (1)
 	{
+		if (st->lt != 0 && st->t->time_to_die < get_time() - st->lt)
+			return (NULL);
 		pthread_mutex_lock(&st->mt[st->id]);
 		ft_print("has taken a fork", st);
-		st->kt = get_time();
-		if (st->lt != 0 && st->t->time_to_die < st->kt - st->lt)
-			return (NULL);
 		pthread_mutex_lock(&st->mt[(st->id + 1) % st->n_philo]);
 		ft_print("has taken a fork", st);
-		st->lt = get_time();
 		ft_print("is eating", st);
+		pthread_mutex_lock(st->t->print_lock);
 		st->n_ofm += 1;
-		usleep(st->t->time_to_eat * 1000);
+		st->lt = get_time();
+		pthread_mutex_unlock(st->t->print_lock);
+		ft_usleep(st->t->time_to_eat);
 		pthread_mutex_unlock(&st->mt[st->id]);
 		pthread_mutex_unlock(&st->mt[(st->id + 1) % st->n_philo]);
 		ft_print("is sleeping", st);
-		usleep(st->t->time_to_sleep * 1000);
+		ft_usleep(st->t->time_to_sleep);
 		ft_print("is thinking", st);
 	}
 	return (NULL);
@@ -87,11 +97,4 @@ int	fill_times(int ac, char **av, t_times *c)
 			return (0);
 	}
 	return (ft_atoi(av[1]));
-}
-
-void	ft_print(char *s, t_philos_data *data)
-{
-	pthread_mutex_lock(data->t->print_lock);
-	printf("%lld philo %d %s\n", get_time(), data->id + 1, s);
-	pthread_mutex_unlock(data->t->print_lock);
 }
