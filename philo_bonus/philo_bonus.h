@@ -18,6 +18,7 @@
 # include <stdlib.h>
 # include <string.h>
 # include <sys/time.h>
+# include <semaphore.h>
 
 typedef struct philo
 {
@@ -25,6 +26,9 @@ typedef struct philo
 	int					time_to_eat;
 	int					time_to_sleep;
 	int					n_to_philo_eat;
+	int					index;
+	sem_t				*sem;
+	sem_t				*sem_lock;
 }t_times;
 
 int			check_arg(char **av);
