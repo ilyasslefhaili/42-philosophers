@@ -14,7 +14,7 @@
 void	ft_print(char *s, t_philos_data *data)
 {
 	pthread_mutex_lock(data->t->print_lock);
-	printf("%lld philo %d %s\n", get_time(), data->id + 1, s);
+	printf("%lld philo %d %s\n", get_time(data->t->first_time), data->id + 1, s);
 	pthread_mutex_unlock(data->t->print_lock);
 }
 

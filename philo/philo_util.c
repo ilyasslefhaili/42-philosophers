@@ -11,15 +11,6 @@
 /* ************************************************************************** */
 #include "philo.h"
 
-void	ft_usleep(long long l)
-{
-	long long	k;
-
-	k = l + get_time();
-	while (k > get_time())
-		usleep(10);
-}
-
 void	*philo_actv(void *par)
 {
 	t_philos_data	*st;
@@ -27,7 +18,8 @@ void	*philo_actv(void *par)
 	st = par;
 	while (1)
 	{
-		if (st->lt != 0 && st->t->time_to_die < get_time() - st->lt)
+		if (st->lt != 0 && st->t->time_to_die
+			< get_time(st->t->first_time) - st->lt)
 			return (NULL);
 		pthread_mutex_lock(&st->mt[st->id]);
 		ft_print("has taken a fork", st);
@@ -36,25 +28,25 @@ void	*philo_actv(void *par)
 		ft_print("is eating", st);
 		pthread_mutex_lock(st->t->print_lock);
 		st->n_ofm += 1;
-		st->lt = get_time();
+		st->lt = get_time(st->t->first_time);
 		pthread_mutex_unlock(st->t->print_lock);
-		ft_usleep(st->t->time_to_eat);
+		usleep(st->t->time_to_eat * 1000);
 		pthread_mutex_unlock(&st->mt[st->id]);
 		pthread_mutex_unlock(&st->mt[(st->id + 1) % st->n_philo]);
 		ft_print("is sleeping", st);
-		ft_usleep(st->t->time_to_sleep);
+		usleep(st->t->time_to_sleep * 1000);
 		ft_print("is thinking", st);
 	}
 	return (NULL);
 }
 
-long long	get_time(void)
+long long	get_time(long long first_time)
 {
 	long long			time;
 	struct timeval		t;
 
 	gettimeofday(&t, NULL);
-	time = t.tv_sec * 1000 + t.tv_usec / 1000;
+	time = (t.tv_sec * 1000 + t.tv_usec / 1000) - first_time;
 	return (time);
 }
 
@@ -82,6 +74,7 @@ int	check_arg(char **av)
 
 int	fill_times(int ac, char **av, t_times *c)
 {
+	c->first_time = get_time(0);
 	c->print_lock = malloc(sizeof(pthread_mutex_t));
 	if (!c->print_lock)
 		return (-1);
