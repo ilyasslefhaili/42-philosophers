@@ -13,25 +13,26 @@
 
 void	print_lock(char *s, t_times *t)
 {
-	if(sem_wait(t->sem_lock) != 0)
-			kill(0, SIGINT);
-	printf("%lld philo %d %s\n", get_time(t->first_time),t->index + 1, s);
-	if(sem_post(t->sem_lock) != 0)
-			kill(0, SIGINT);
+	if (sem_wait(t->sem_lock) != 0)
+		kill(0, SIGINT);
+	printf("%lld philo %d %s\n", get_time(t->first_time), t->index + 1, s);
+	if (sem_post(t->sem_lock) != 0)
+		kill(0, SIGINT);
 }
 
 void	*cheeck_death(void	*par)
 {
-	t_times *t;
+	t_times		*t;
 
 	t = par;
 	while (1)
 	{
 		if (t->time_to_die < get_time(t->first_time) - t->time_last_eat)
 		{
-			if(sem_wait(t->sem_lock) != 0)
+			if (sem_wait(t->sem_lock) != 0)
 				kill(0, SIGINT);
-			printf("%lld philo %d is die\n", get_time(t->first_time),t->index + 1);
+			printf("%lld philo %d is die\n", get_time(t->first_time),
+				t->index + 1);
 			kill(0, SIGINT);
 			return (NULL);
 		}
@@ -41,24 +42,24 @@ void	*cheeck_death(void	*par)
 
 void	philo_activ(t_times *t)
 {
-	pthread_t check;
+	pthread_t	check;
 
-	if(pthread_create(&check, NULL, cheeck_death, t) != 0)
+	if (pthread_create(&check, NULL, cheeck_death, t) != 0)
 		kill(0, SIGINT);
 	while (1)
 	{
-		if(sem_wait(t->sem) != 0)
+		if (sem_wait(t->sem) != 0)
 			kill(0, SIGINT);
 		print_lock("has taken a fork", t);
-		if(sem_wait(t->sem) != 0)
+		if (sem_wait(t->sem) != 0)
 			kill(0, SIGINT);
 		print_lock("has taken a fork", t);
 		t->time_last_eat = get_time(t->first_time);
 		print_lock("is eating", t);
 		usleep(t->time_to_eat * 1000);
-		if(sem_post(t->sem) != 0)
+		if (sem_post(t->sem) != 0)
 			kill(0, SIGINT);
-		if(sem_post(t->sem) != 0)
+		if (sem_post(t->sem) != 0)
 			kill(0, SIGINT);
 		print_lock("is sleeping", t);
 		usleep(t->time_to_sleep * 1000);
@@ -66,7 +67,7 @@ void	philo_activ(t_times *t)
 	}
 }
 
-int main(int ac, char **av)
+int	main(int ac, char **av)
 {
 	int		nph;
 	t_times	*tim;
@@ -79,7 +80,7 @@ int main(int ac, char **av)
 		exit(1);
 	tim->first_time = get_time(0);
 	nph = fill_times(ac, av, tim);
-	if(nph <= 0)
+	if (nph <= 0)
 		exit(1);
 	sem_unlink("ilyass");
 	sem_unlink("ana");
