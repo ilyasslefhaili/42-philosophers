@@ -19,6 +19,7 @@
 # include <string.h>
 # include <sys/time.h>
 # include <semaphore.h>
+# include <signal.h>
 
 typedef struct philo
 {
@@ -29,6 +30,7 @@ typedef struct philo
 	int					index;
 	sem_t				*sem;
 	sem_t				*sem_lock;
+	long long			time_last_eat;
 }t_times;
 
 int			check_arg(char **av);
