@@ -30,12 +30,13 @@ typedef struct philo
 	int					index;
 	sem_t				*sem;
 	sem_t				*sem_lock;
+	long long			first_time;
 	long long			time_last_eat;
 }t_times;
 
 int			check_arg(char **av);
 int			fill_times(int ac, char **av, t_times *c);
 int			ft_atoi(const char *str);
-long long	get_time(void);
+long long	get_time(long long first_time);
 
 #endif

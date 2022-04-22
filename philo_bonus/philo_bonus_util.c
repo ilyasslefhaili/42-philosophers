@@ -48,12 +48,12 @@ int	fill_times(int ac, char **av, t_times *c)
 	return (ft_atoi(av[1]));
 }
 
-long long	get_time(void)
+long long	get_time(long long first_time)
 {
 	long long			time;
 	struct timeval		t;
 
 	gettimeofday(&t, NULL);
-	time = t.tv_sec * 1000 + t.tv_usec / 1000;
+	time = t.tv_sec * 1000 + t.tv_usec / 1000 - first_time;
 	return (time);
 }
