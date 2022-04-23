@@ -69,14 +69,13 @@ int	waiting(t_philos_data *philo_d, t_times *tim, int nph, char **av)
 	while (1)
 	{
 		i = -1;
-		while (i++ < nph)
+		while (++i < nph)
 		{
 			pthread_mutex_lock(tim->print_lock);
-			if ((philo_d[i].lt != 0
-					&& philo_d[i].t->time_to_die
+			if ((philo_d[i].n_ofm && tim->time_to_die
 					< get_time(tim->first_time) - philo_d[i].lt)
 				|| nph == 1)
-			{	
+			{
 				printf("\x1b[0;31m""%lld philo %d is die\n""\x1b[0m",
 					get_time(tim->first_time), philo_d[i].id + 1);
 				return (0);

@@ -47,7 +47,7 @@ int	ft_atoi(const char *str)
 		i++;
 	}
 	done(str, i, &nmbr);
-	if (nmbr >= 9223372036854775807)
+	if (nmbr >= 2147483647)
 		return (-1);
 	return (s * nmbr);
 }

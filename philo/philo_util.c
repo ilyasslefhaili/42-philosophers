@@ -18,18 +18,18 @@ void	*philo_actv(void *par)
 	st = par;
 	while (1)
 	{
-		if (st->lt != 0 && st->t->time_to_die
+		if (st->n_ofm && st->t->time_to_die
 			< get_time(st->t->first_time) - st->lt)
 			return (NULL);
 		pthread_mutex_lock(&st->mt[st->id]);
 		ft_print("has taken a fork", st);
 		pthread_mutex_lock(&st->mt[(st->id + 1) % st->n_philo]);
 		ft_print("has taken a fork", st);
-		ft_print("is eating", st);
 		pthread_mutex_lock(st->t->print_lock);
 		st->n_ofm += 1;
 		st->lt = get_time(st->t->first_time);
 		pthread_mutex_unlock(st->t->print_lock);
+		ft_print("is eating", st);
 		usleep(st->t->time_to_eat * 1000);
 		pthread_mutex_unlock(&st->mt[st->id]);
 		pthread_mutex_unlock(&st->mt[(st->id + 1) % st->n_philo]);
@@ -80,8 +80,14 @@ int	fill_times(int ac, char **av, t_times *c)
 		return (-1);
 	pthread_mutex_init(c->print_lock, NULL);
 	c->time_to_die = ft_atoi(av[2]);
+	if (c->time_to_die < 0)
+		return (0);
 	c->time_to_eat = ft_atoi(av[3]);
+	if (c->time_to_die < 0)
+		return (0);
 	c->time_to_sleep = ft_atoi(av[4]);
+	if (c->time_to_die < 0)
+		return (0);
 	ac = 0;
 	if (av[5])
 	{
