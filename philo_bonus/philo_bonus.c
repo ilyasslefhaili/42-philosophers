@@ -85,19 +85,15 @@ void	finish(t_times *tim, int nph, sem_t *sem_a)
 	int		r_fork;
 	pid_t	*pid;
 
+	if (sem_a == SEM_FAILED || tim->sem == SEM_FAILED
+		|| tim->sem_lock == SEM_FAILED)
+		exit(1);
 	pid = malloc(sizeof(pid) * nph);
 	while (tim->index < nph)
 	{	
 		r_fork = fork();
 		if (r_fork < 0)
-		{
-			while (tim->index > 0)
-			{
-				kill(pid[tim->index], SIGINT);
-				tim->index--;
-			}
-			exit (1);
-		}
+			kill(0, SIGINT);
 		if (r_fork == 0)
 			philo_activ(tim, sem_a);
 		usleep(100);
@@ -123,11 +119,14 @@ int	main(int ac, char **av)
 	nph = fill_times(ac, av, tim);
 	if (nph <= 0)
 		exit(1);
-	sem_unlink("philo");
+	if (sem_unlink("philo") != 0)
+		exit(1);
 	tim->sem = sem_open("philo", O_CREAT, 0777, nph);
-	sem_unlink("print");
+	if (sem_unlink("print") != 0)
+		exit(1);
 	tim->sem_lock = sem_open("print", O_CREAT, 0777, 1);
-	sem_unlink("k");
+	if (sem_unlink("k") != 0)
+		exit(1);
 	sem_a = sem_open("k", O_CREAT, 0777, 1);
 	tim->index = 0;
 	finish(tim, nph, sem_a);
