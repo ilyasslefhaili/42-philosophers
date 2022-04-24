@@ -4,7 +4,7 @@ PHILO_A = philo_bonus.a
 
 CC = gcc
 
-CFLAGS = -Wall -Wextra -Werror -g
+CFLAGS = -Wall -Wextra -Werror
 
 SRCS = philo_bonus.c\
 		atoi.c\

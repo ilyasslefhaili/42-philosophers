@@ -16,7 +16,7 @@ int	check_arg(char **av, int ac)
 	int	i;
 	int	j;
 
-	if(ac < 5 || ac > 6)
+	if (ac < 5 || ac > 6)
 		return (1);
 	i = 1;
 	while (av[i])
@@ -55,7 +55,7 @@ int	fill_times(int ac, char **av, t_times *c)
 			return (0);
 	}
 	c->n_ofm = 0;
-	return (ft_atoi(av[1]));;
+	return (ft_atoi(av[1]));
 }
 
 long long	get_time(long long first_time)
@@ -66,4 +66,21 @@ long long	get_time(long long first_time)
 	gettimeofday(&t, NULL);
 	time = t.tv_sec * 1000 + t.tv_usec / 1000 - first_time;
 	return (time);
+}
+
+void	print_lock(char *s, t_times *t)
+{
+	if (sem_wait(t->sem_lock) != 0)
+		kill(0, SIGINT);
+	printf("%lld philo %d %s\n", get_time(t->first_time), t->index + 1, s);
+	if (sem_post(t->sem_lock) != 0)
+		kill(0, SIGINT);
+}
+
+void	ft_exit(t_times *t)
+{
+	sem_post(t->sema);
+	sem_post(t->sem);
+	sem_post(t->sem);
+	exit(0);
 }

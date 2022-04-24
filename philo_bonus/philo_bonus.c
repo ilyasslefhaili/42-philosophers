@@ -11,15 +11,6 @@
 /* ************************************************************************** */
 #include "philo_bonus.h"
 
-void	print_lock(char *s, t_times *t)
-{
-	if (sem_wait(t->sem_lock) != 0)
-		kill(0, SIGINT);
-	printf("%lld philo %d %s\n", get_time(t->first_time), t->index + 1, s);
-	if (sem_post(t->sem_lock) != 0)
-		kill(0, SIGINT);
-}
-
 void	*cheeck_death(void	*par)
 {
 	t_times		*t;
@@ -27,36 +18,33 @@ void	*cheeck_death(void	*par)
 	t = par;
 	while (1)
 	{
-		if (sem_wait(t->sem_lock) != 0)
-				kill(0, SIGINT);
-		if (t->n_ofm != 0 && t->time_to_die < get_time(t->first_time) - t->time_last_eat)
+		if (sem_wait(t->sema) != 0)
+			kill(0, SIGINT);
+		if (t->n_ofm != 0
+			&& t->time_to_die < get_time(t->first_time) - t->time_last_eat)
 		{
+			if (sem_wait(t->sem_lock) != 0)
+				kill(0, SIGINT);
 			printf("%lld philo %d is die\n", get_time(t->first_time),
 				t->index + 1);
 			kill(0, SIGINT);
-			return (NULL);
 		}
-		if(t->av[5])
+		if (t->av[5])
 		{
-			if (t->n_ofm >= t->n_to_philo_eat)
-			{
-				if (sem_post(t->sem_lock) != 0)
-					kill(0, SIGINT);
-				sem_post(t->sem);
-				sem_post(t->sem);
-				exit(0);
-			}
+			if (t->n_ofm == t->n_to_philo_eat)
+				ft_exit(t);
 		}
-		if (sem_post(t->sem_lock) != 0)
+		if (sem_post(t->sema) != 0)
 			kill(0, SIGINT);
 	}
 	return (NULL);
 }
 
-void	philo_activ(t_times *t)
+void	philo_activ(t_times *t, sem_t *sem_a)
 {
 	pthread_t	check;
 
+	t->sema = sem_a;
 	if (pthread_create(&check, NULL, cheeck_death, t) != 0)
 		kill(0, SIGINT);
 	while (1)
@@ -67,30 +55,63 @@ void	philo_activ(t_times *t)
 		if (sem_wait(t->sem) != 0)
 			kill(0, SIGINT);
 		print_lock("has taken a fork", t);
-		if (sem_wait(t->sem_lock) != 0)
-			kill(0, SIGINT);
-		t->time_last_eat = get_time(t->first_time);
-		if (sem_post(t->sem_lock) != 0)
-			kill(0, SIGINT);
+		sem_eat(sem_a, t);
 		print_lock("is eating", t);
-		t->n_ofm += 1;
-		usleep(t->time_to_eat * 1000);
+		ft_usleep(t->time_to_eat, t->first_time);
 		if (sem_post(t->sem) != 0)
 			kill(0, SIGINT);
 		if (sem_post(t->sem) != 0)
 			kill(0, SIGINT);
 		print_lock("is sleeping", t);
-		usleep(t->time_to_sleep * 1000);
+		ft_usleep(t->time_to_sleep, t->first_time);
 		print_lock("is thinking", t);
 	}
+}
+
+void	wait_proc(int nph)
+{
+	int	i;
+
+	i = 0;
+	while (i < nph)
+	{
+		waitpid(-1, NULL, 0);
+		i++;
+	}
+}
+
+void	finish(t_times *tim, int nph, sem_t *sem_a)
+{
+	int		r_fork;
+	pid_t	*pid;
+
+	pid = malloc(sizeof(pid) * nph);
+	while (tim->index < nph)
+	{	
+		r_fork = fork();
+		if (r_fork < 0)
+		{
+			while (tim->index > 0)
+			{
+				kill(pid[tim->index], SIGINT);
+				tim->index--;
+			}
+			exit (1);
+		}
+		if (r_fork == 0)
+			philo_activ(tim, sem_a);
+		usleep(100);
+		tim->index++;
+	}
+	wait_proc(nph);
+	printf("all philos are taken his mils\n");
 }
 
 int	main(int ac, char **av)
 {
 	int		nph;
 	t_times	*tim;
-	int		r_fork;
-	int		i;
+	sem_t	*sem_a;
 
 	if (check_arg(av, ac) == 1)
 		return (1);
@@ -102,24 +123,12 @@ int	main(int ac, char **av)
 	nph = fill_times(ac, av, tim);
 	if (nph <= 0)
 		exit(1);
-	sem_unlink("ilyass");
-	tim->sem = sem_open("ilyass", O_CREAT, 0777, nph);
-	sem_unlink("ana");
-	tim->sem_lock = sem_open("ana", O_CREAT, 0777, 1);
+	sem_unlink("philo");
+	tim->sem = sem_open("philo", O_CREAT, 0777, nph);
+	sem_unlink("print");
+	tim->sem_lock = sem_open("print", O_CREAT, 0777, 1);
+	sem_unlink("k");
+	sem_a = sem_open("k", O_CREAT, 0777, 1);
 	tim->index = 0;
-	while (tim->index < nph)
-	{
-		r_fork = fork();
-		if (r_fork == 0)
-			philo_activ(tim);
-		usleep(100);
-		tim->index++;
-	}
-	i = 0;
-	while (i < nph)
-	{
-		waitpid(-1, NULL, 0);
-		i++;
-	}
-	printf("all philos are taken his mils\n");
+	finish(tim, nph, sem_a);
 }
